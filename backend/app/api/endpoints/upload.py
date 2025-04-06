@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime
 
 from app.api.endpoints.utils import validate_xml
+from app.xml_parser.parser import parse_saft_to_excel
 
 router = APIRouter()
 
@@ -29,3 +30,13 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Validation failed: {str(e)}")
     finally:
         await file.close()
+
+    excel_buffer = parse_saft_to_excel(file_content)
+    return StreamingResponse(
+        io.BytesIO(excel_buffer), 
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+        headers={
+            "Content-Disposition": "attachment; filename=saft_data.xlsx"
+        }
+    )
+    

@@ -1,5 +1,5 @@
 import pandas as pd
-import os
+import io
 from lxml import etree
 
 NAMESPACES = {'nsSAFT': 'mfp:anaf:dgti:d406:declaratie:v1'}
@@ -281,20 +281,28 @@ def parse_saft_to_excel(xml_content: str) -> bool:
         suppliers_df = parse_suppliers(xml_content)
         transactions_df = parse_transactions(xml_content)
 
-        # Create Excel writer object
-        with pd.ExcelWriter('saft_data.xlsx') as writer:
-            # Write each dataframe to a separate sheet
+        # # Create Excel writer object
+        # with pd.ExcelWriter('saft_data.xlsx') as writer:
+        #     # Write each dataframe to a separate sheet
+        #     tax_tables_df.to_excel(writer, sheet_name='Tax Tables', index=False)
+        #     gl_accounts_df.to_excel(writer, sheet_name='GL Accounts', index=False)
+        #     customers_df.to_excel(writer, sheet_name='Customers', index=False)
+        #     suppliers_df.to_excel(writer, sheet_name='Suppliers', index=False)
+        #     transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
+
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
             tax_tables_df.to_excel(writer, sheet_name='Tax Tables', index=False)
             gl_accounts_df.to_excel(writer, sheet_name='GL Accounts', index=False)
             customers_df.to_excel(writer, sheet_name='Customers', index=False)
             suppliers_df.to_excel(writer, sheet_name='Suppliers', index=False)
             transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
 
-        return True
+        return excel_buffer.getvalue()
 
     except Exception as e:
         print(f"Error writing to Excel: {str(e)}")
-        return False
+
     
 
 
