@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { Box, Button, Typography, Paper, Alert, CircularProgress } from '@mui/material';
-import { Upload as UploadIcon } from '@mui/icons-material';
+import { Upload as UploadIcon, Download as DownloadIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 const Home: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [processedData, setProcessedData] = useState<Blob | null>(null);
+  const [filename, setFilename] = useState<string>('');
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
       setMessage(null);
+      setProcessedData(null);
     }
   };
 
-  const handleUpload = async () => {
+  const handleProcess = async () => {
     if (!file) {
       setMessage({ type: 'error', text: 'Please select a file first' });
       return;
@@ -33,33 +36,42 @@ const Home: React.FC = () => {
         responseType: 'blob',
       });
 
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
+      // Store the processed data
+      setProcessedData(new Blob([response.data]));
       
       // Get filename from Content-Disposition header or use a default
       const contentDisposition = response.headers['content-disposition'];
-      let filename = 'processed_data.xlsx';
+      let newFilename = 'processed_data.xlsx';
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename=(.+)/);
         if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1];
+          newFilename = filenameMatch[1];
         }
       }
+      setFilename(newFilename);
       
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      setMessage({ type: 'success', text: 'File processed and downloaded successfully!' });
+      setMessage({ type: 'success', text: 'File processed successfully! You can now download the result.' });
       setFile(null);
     } catch (error) {
       setMessage({ type: 'error', text: 'Error processing file. Please try again.' });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!processedData) {
+      setMessage({ type: 'error', text: 'No processed data available to download' });
+      return;
+    }
+
+    const url = window.URL.createObjectURL(processedData);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   return (
@@ -95,10 +107,10 @@ const Home: React.FC = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleUpload}
+              onClick={handleProcess}
               disabled={!file || isLoading}
             >
-              Process and Download Excel
+              Process File
             </Button>
             {isLoading && (
               <CircularProgress
@@ -113,6 +125,16 @@ const Home: React.FC = () => {
               />
             )}
           </Box>
+          {processedData && (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<DownloadIcon />}
+              onClick={handleDownload}
+            >
+              Download Processed File
+            </Button>
+          )}
         </Box>
         {message && (
           <Alert severity={message.type} sx={{ mt: 2 }}>
