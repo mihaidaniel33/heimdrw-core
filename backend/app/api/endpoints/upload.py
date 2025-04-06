@@ -23,17 +23,17 @@ async def upload_file(file: UploadFile = File(...)):
 
     try:
         validate_xml(file_content, schema_path)
-        
     except ET.ParseError as e:
         raise HTTPException(status_code=400, detail=f"Invalid XML format: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Validation failed: {str(e)}")
-    finally:
-        await file.close()
 
-    excel_buffer = parse_saft_to_excel(file_content)
+
+    excel_buffer = parse_saft_to_excel(io.BytesIO(file_content))
+    excel_buffer.seek(0)
+    
     return StreamingResponse(
-        io.BytesIO(excel_buffer), 
+        excel_buffer, 
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
         headers={
             "Content-Disposition": "attachment; filename=saft_data.xlsx"

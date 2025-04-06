@@ -190,7 +190,7 @@ def parse_remaining_fields(xml_content: str) -> pd.DataFrame:
     
     return pd.DataFrame()
 
-def parse_transactions(xml_content: str) -> pd.DataFrame:
+def parse_transactions(xml_content: any) -> pd.DataFrame:
     """
     </nsSAFT:Transaction><nsSAFT:Transaction>
 			<nsSAFT:TransactionID>1620</nsSAFT:TransactionID><nsSAFT:Period>3</nsSAFT:Period><nsSAFT:PeriodYear>2025</nsSAFT:PeriodYear><nsSAFT:TransactionDate>2025-03-17</nsSAFT:TransactionDate><nsSAFT:Description>Numar document: EC03 - IMPOZITUL PE VENITURI DE NATURA SALARIILOR</nsSAFT:Description><nsSAFT:BatchID>1620</nsSAFT:BatchID><nsSAFT:SystemEntryDate>2025-03-17</nsSAFT:SystemEntryDate><nsSAFT:GLPostingDate>2025-03-17</nsSAFT:GLPostingDate><nsSAFT:CustomerID>0047891725</nsSAFT:CustomerID><nsSAFT:SupplierID>0047891725</nsSAFT:SupplierID><nsSAFT:SystemID>1620</nsSAFT:SystemID><nsSAFT:TransactionLine><nsSAFT:RecordID>91</nsSAFT:RecordID><nsSAFT:AccountID>444</nsSAFT:AccountID><nsSAFT:Analysis><nsSAFT:AnalysisType>A</nsSAFT:AnalysisType><nsSAFT:AnalysisID>0000</nsSAFT:AnalysisID><nsSAFT:AnalysisAmount><nsSAFT:Amount>264.00</nsSAFT:Amount><nsSAFT:CurrencyCode>RON</nsSAFT:CurrencyCode><nsSAFT:CurrencyAmount>264.00</nsSAFT:CurrencyAmount><nsSAFT:ExchangeRate>1.0000</nsSAFT:ExchangeRate></nsSAFT:AnalysisAmount></nsSAFT:Analysis><nsSAFT:CustomerID>0047891725</nsSAFT:CustomerID><nsSAFT:SupplierID>0047891725</nsSAFT:SupplierID><nsSAFT:Description>IMPOZITUL PE VENITURI DE NATURA SALARIILOR</nsSAFT:Description><nsSAFT:DebitAmount><nsSAFT:Amount>264.00</nsSAFT:Amount><nsSAFT:CurrencyCode>RON</nsSAFT:CurrencyCode><nsSAFT:CurrencyAmount>264.00</nsSAFT:CurrencyAmount><nsSAFT:ExchangeRate>1.0000</nsSAFT:ExchangeRate></nsSAFT:DebitAmount><nsSAFT:TaxInformation><nsSAFT:TaxType>000</nsSAFT:TaxType><nsSAFT:TaxCode>000000</nsSAFT:TaxCode><nsSAFT:TaxAmount><nsSAFT:Amount>0.00</nsSAFT:Amount><nsSAFT:CurrencyCode>RON</nsSAFT:CurrencyCode><nsSAFT:CurrencyAmount>0.00</nsSAFT:CurrencyAmount><nsSAFT:ExchangeRate>1.0000</nsSAFT:ExchangeRate></nsSAFT:TaxAmount></nsSAFT:TaxInformation></nsSAFT:TransactionLine><nsSAFT:TransactionLine><nsSAFT:RecordID>92</nsSAFT:RecordID><nsSAFT:AccountID>512100001</nsSAFT:AccountID><nsSAFT:Analysis><nsSAFT:AnalysisType>A</nsSAFT:AnalysisType><nsSAFT:AnalysisID>0000</nsSAFT:AnalysisID><nsSAFT:AnalysisAmount><nsSAFT:Amount>264.00</nsSAFT:Amount><nsSAFT:CurrencyCode>RON</nsSAFT:CurrencyCode><nsSAFT:CurrencyAmount>264.00</nsSAFT:CurrencyAmount><nsSAFT:ExchangeRate>1.0000</nsSAFT:ExchangeRate></nsSAFT:AnalysisAmount></nsSAFT:Analysis><nsSAFT:CustomerID>0047891725</nsSAFT:CustomerID><nsSAFT:SupplierID>0047891725</nsSAFT:SupplierID><nsSAFT:Description>IMPOZITUL PE VENITURI DE NATURA SALARIILOR</nsSAFT:Description><nsSAFT:CreditAmount><nsSAFT:Amount>264.00</nsSAFT:Amount><nsSAFT:CurrencyCode>RON</nsSAFT:CurrencyCode><nsSAFT:CurrencyAmount>264.00</nsSAFT:CurrencyAmount><nsSAFT:ExchangeRate>1.0000</nsSAFT:ExchangeRate></nsSAFT:CreditAmount><nsSAFT:TaxInformation><nsSAFT:TaxType>000</nsSAFT:TaxType><nsSAFT:TaxCode>000000</nsSAFT:TaxCode><nsSAFT:TaxAmount><nsSAFT:Amount>0.00</nsSAFT:Amount><nsSAFT:CurrencyCode>RON</nsSAFT:CurrencyCode><nsSAFT:CurrencyAmount>0.00</nsSAFT:CurrencyAmount><nsSAFT:ExchangeRate>1.0000</nsSAFT:ExchangeRate></nsSAFT:TaxAmount></nsSAFT:TaxInformation></nsSAFT:TransactionLine>
@@ -264,7 +264,7 @@ def parse_transactions(xml_content: str) -> pd.DataFrame:
     return df
    
     
-def parse_saft_to_excel(xml_content: str) -> bool:
+def parse_saft_to_excel(xml_content: str) -> io.BytesIO:
     """Parse SAFT XML content and write multiple dataframes to Excel file.
     
     Args:
@@ -291,14 +291,15 @@ def parse_saft_to_excel(xml_content: str) -> bool:
         #     transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
 
         excel_buffer = io.BytesIO()
-        with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
             tax_tables_df.to_excel(writer, sheet_name='Tax Tables', index=False)
             gl_accounts_df.to_excel(writer, sheet_name='GL Accounts', index=False)
             customers_df.to_excel(writer, sheet_name='Customers', index=False)
             suppliers_df.to_excel(writer, sheet_name='Suppliers', index=False)
             transactions_df.to_excel(writer, sheet_name='Transactions', index=False)
 
-        return excel_buffer.getvalue()
+        print(f"Excel BUFFER: {excel_buffer}")
+        return excel_buffer
 
     except Exception as e:
         print(f"Error writing to Excel: {str(e)}")
