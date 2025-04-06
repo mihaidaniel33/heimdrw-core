@@ -1,40 +1,46 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button, Container, Box } from '@mui/material';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, CssBaseline, AppBar, Toolbar, Container, Box } from '@mui/material';
+import { theme } from './theme';
 import Home from './pages/Home';
-import About from './pages/About';
-import Contact from './pages/Contact';
+import Logo from './components/Logo';
+import CurvedBackground from './components/CurvedBackground';
 
-function App() {
-  return (
-    <Router>
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Financial Audit App
-            </Typography>
-            <Button color="inherit" component={Link} to="/">
-              Home
-            </Button>
-            <Button color="inherit" component={Link} to="/about">
-              About
-            </Button>
-            <Button color="inherit" component={Link} to="/contact">
-              Contact
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
-        </Container>
-      </Box>
-    </Router>
-  );
-}
+const App: React.FC = () => {
+    return (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Router>
+                <Box sx={{ 
+                    minHeight: '100vh',
+                    position: 'relative',
+                    background: 'linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%)'
+                }}>
+                    <CurvedBackground />
+                    <AppBar 
+                        position="static" 
+                        elevation={0}
+                        sx={{ 
+                            background: 'transparent',
+                            backdropFilter: 'blur(10px)',
+                            borderBottom: '1px solid rgba(74, 107, 255, 0.1)'
+                        }}
+                    >
+                        <Toolbar>
+                            <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Logo />
+                                <Box sx={{ flexGrow: 1 }} />
+                                {/* Add navigation items here if needed */}
+                            </Container>
+                        </Toolbar>
+                    </AppBar>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                    </Routes>
+                </Box>
+            </Router>
+        </ThemeProvider>
+    );
+};
 
 export default App;
